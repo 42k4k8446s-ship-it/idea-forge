@@ -28,15 +28,19 @@ function renderIdeas() {
     const card = document.createElement("article");
     card.className = "idea-card";
 
-    card.innerHTML = `
-      <small>${idea.category}</small>
-      <h3>${idea.text}</h3>
-      <button class="want-btn ${idea.wantToBuild ? "active" : ""}">
-        ${idea.wantToBuild ? "✓ 想做" : "標記想做"}
-      </button>
-    `;
+    const category = document.createElement("small");
+category.textContent = idea.category;
 
-    card.querySelector(".want-btn").addEventListener("click", () => {
+const title = document.createElement("h3");
+title.textContent = idea.text;
+
+const wantButton = document.createElement("button");
+wantButton.className = `want-btn ${idea.wantToBuild ? "active" : ""}`;
+wantButton.textContent = idea.wantToBuild ? "✓ 想做" : "標記想做";
+
+card.append(category, title, wantButton);
+
+wantButton.addEventListener("click", () => {
       idea.wantToBuild = !idea.wantToBuild;
       saveIdeas();
       renderIdeas();
