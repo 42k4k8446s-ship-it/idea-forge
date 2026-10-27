@@ -20,6 +20,26 @@ function saveIdeas() {
   localStorage.setItem("idea-forge", JSON.stringify(ideas));
 }
 
+function formatCreatedAt(createdAt) {
+  if (!createdAt) {
+    return "舊資料";
+  }
+
+  const date = new Date(createdAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return "舊資料";
+  }
+
+  return date.toLocaleString("zh-TW", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
 function getFilteredIdeas() {
   const searchTerm = searchInput.value.trim().toLowerCase();
 
@@ -33,7 +53,9 @@ function getFilteredIdeas() {
       idea.wantToBuild;
 
     const searchMatches =
-      idea.text.toLowerCase().includes(searchTerm);
+      String(idea.text || "")
+        .toLowerCase()
+        .includes(searchTerm);
 
     return (
       categoryMatches &&
@@ -70,7 +92,7 @@ function createEditForm(idea, card) {
 
   const textInput = document.createElement("input");
   textInput.type = "text";
-  textInput.value = idea.text;
+  textInput.value = idea.text || "";
 
   const categorySelect = document.createElement("select");
 
@@ -159,15 +181,20 @@ function renderIdeas() {
     }
 
     const category = document.createElement("small");
-    category.textContent = idea.category;
+    category.textContent = idea.category || "Random";
+
+    const createdAt = document.createElement("small");
+    createdAt.textContent =
+      `建立：${formatCreatedAt(idea.createdAt)}`;
 
     const title = document.createElement("h3");
-    title.textContent = idea.text;
+    title.textContent = idea.text || "未命名 Idea";
 
     const actions = document.createElement("div");
     actions.className = "card-actions";
 
     const wantButton = document.createElement("button");
+
     wantButton.className =
       `want-btn ${idea.wantToBuild ? "active" : ""}`;
 
@@ -217,6 +244,7 @@ function renderIdeas() {
 
     card.append(
       category,
+      createdAt,
       title,
       actions
     );
@@ -236,7 +264,8 @@ function addIdea() {
     id: crypto.randomUUID(),
     text,
     category: categoryInput.value,
-    wantToBuild: false
+    wantToBuild: false,
+    createdAt: new Date().toISOString()
   });
 
   ideaInput.value = "";
