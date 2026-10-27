@@ -45,6 +45,14 @@ h1 {
   margin: 48px 0 24px;
 }
 
+.search-section {
+  margin-bottom: 24px;
+}
+
+.search-section input {
+  width: 100%;
+}
+
 input,
 select,
 button {
@@ -167,7 +175,7 @@ button.secondary {
 
 .card-actions {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 8px;
 }
 
@@ -181,10 +189,40 @@ button.secondary {
   color: black;
 }
 
+.edit-btn {
+  background: #222;
+  color: #ddd;
+}
+
 .delete-btn {
   background: #241717;
   color: #ffaaaa;
   border-color: #422;
+}
+
+.edit-form {
+  display: grid;
+  gap: 10px;
+}
+
+.edit-form input,
+.edit-form select {
+  width: 100%;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.save-btn {
+  flex: 1;
+}
+
+.cancel-btn {
+  flex: 1;
+  background: #222;
+  color: white;
 }
 
 .empty {
@@ -208,5 +246,9 @@ button.secondary {
 
   .toolbar-actions {
     align-items: flex-start;
+  }
+
+  .card-actions {
+    grid-template-columns: 1fr;
   }
 }

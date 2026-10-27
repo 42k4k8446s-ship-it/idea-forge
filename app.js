@@ -5,6 +5,8 @@ const randomBtn = document.querySelector("#randomBtn");
 const ideaList = document.querySelector("#ideaList");
 const ideaCount = document.querySelector("#ideaCount");
 const randomResult = document.querySelector("#randomResult");
+
+const searchInput = document.querySelector("#searchInput");
 const filterButtons = document.querySelectorAll(".filter-btn");
 const favoriteOnly = document.querySelector("#favoriteOnly");
 const clearAllBtn = document.querySelector("#clearAllBtn");
@@ -12,36 +14,117 @@ const filterStatus = document.querySelector("#filterStatus");
 
 let ideas = JSON.parse(localStorage.getItem("idea-forge")) || [];
 let activeCategory = "All";
+let editingIdeaId = null;
 
 function saveIdeas() {
   localStorage.setItem("idea-forge", JSON.stringify(ideas));
 }
 
 function getFilteredIdeas() {
+  const searchTerm = searchInput.value.trim().toLowerCase();
+
   return ideas.filter((idea) => {
     const categoryMatches =
-      activeCategory === "All" || idea.category === activeCategory;
+      activeCategory === "All" ||
+      idea.category === activeCategory;
 
     const favoriteMatches =
-      !favoriteOnly.checked || idea.wantToBuild;
+      !favoriteOnly.checked ||
+      idea.wantToBuild;
 
-    return categoryMatches && favoriteMatches;
+    const searchMatches =
+      idea.text.toLowerCase().includes(searchTerm);
+
+    return (
+      categoryMatches &&
+      favoriteMatches &&
+      searchMatches
+    );
   });
 }
 
 function updateFilterStatus(filteredIdeas) {
-  const categoryText =
-    activeCategory === "All"
-      ? "全部分類"
-      : activeCategory;
+  const parts = [];
 
-  const favoriteText =
-    favoriteOnly.checked
-      ? " / 只看想做"
-      : "";
+  if (activeCategory === "All") {
+    parts.push("全部分類");
+  } else {
+    parts.push(activeCategory);
+  }
+
+  if (favoriteOnly.checked) {
+    parts.push("只看想做");
+  }
+
+  if (searchInput.value.trim()) {
+    parts.push(`搜尋「${searchInput.value.trim()}」`);
+  }
 
   filterStatus.textContent =
-    `${categoryText}${favoriteText} · ${filteredIdeas.length} 筆`;
+    `${parts.join(" / ")} · ${filteredIdeas.length} 筆`;
+}
+
+function createEditForm(idea, card) {
+  const form = document.createElement("div");
+  form.className = "edit-form";
+
+  const textInput = document.createElement("input");
+  textInput.type = "text";
+  textInput.value = idea.text;
+
+  const categorySelect = document.createElement("select");
+
+  ["Game", "Design", "Video", "Business", "Random"]
+    .forEach((categoryName) => {
+      const option = document.createElement("option");
+
+      option.value = categoryName;
+      option.textContent = categoryName;
+
+      if (categoryName === idea.category) {
+        option.selected = true;
+      }
+
+      categorySelect.appendChild(option);
+    });
+
+  const actions = document.createElement("div");
+  actions.className = "edit-actions";
+
+  const saveButton = document.createElement("button");
+  saveButton.className = "save-btn";
+  saveButton.textContent = "儲存";
+
+  const cancelButton = document.createElement("button");
+  cancelButton.className = "cancel-btn";
+  cancelButton.textContent = "取消";
+
+  saveButton.addEventListener("click", () => {
+    const newText = textInput.value.trim();
+
+    if (!newText) {
+      return;
+    }
+
+    idea.text = newText;
+    idea.category = categorySelect.value;
+
+    editingIdeaId = null;
+
+    saveIdeas();
+    renderIdeas();
+  });
+
+  cancelButton.addEventListener("click", () => {
+    editingIdeaId = null;
+    renderIdeas();
+  });
+
+  actions.append(saveButton, cancelButton);
+  form.append(textInput, categorySelect, actions);
+  card.appendChild(form);
+
+  textInput.focus();
 }
 
 function renderIdeas() {
@@ -69,6 +152,12 @@ function renderIdeas() {
     const card = document.createElement("article");
     card.className = "idea-card";
 
+    if (editingIdeaId === idea.id) {
+      createEditForm(idea, card);
+      ideaList.appendChild(card);
+      return;
+    }
+
     const category = document.createElement("small");
     category.textContent = idea.category;
 
@@ -89,7 +178,17 @@ function renderIdeas() {
 
     wantButton.addEventListener("click", () => {
       idea.wantToBuild = !idea.wantToBuild;
+
       saveIdeas();
+      renderIdeas();
+    });
+
+    const editButton = document.createElement("button");
+    editButton.className = "edit-btn";
+    editButton.textContent = "編輯";
+
+    editButton.addEventListener("click", () => {
+      editingIdeaId = idea.id;
       renderIdeas();
     });
 
@@ -102,12 +201,25 @@ function renderIdeas() {
         (currentIdea) => currentIdea.id !== idea.id
       );
 
+      if (editingIdeaId === idea.id) {
+        editingIdeaId = null;
+      }
+
       saveIdeas();
       renderIdeas();
     });
 
-    actions.append(wantButton, deleteButton);
-    card.append(category, title, actions);
+    actions.append(
+      wantButton,
+      editButton,
+      deleteButton
+    );
+
+    card.append(
+      category,
+      title,
+      actions
+    );
 
     ideaList.appendChild(card);
   });
@@ -137,13 +249,17 @@ function pickRandomIdea() {
   const filteredIdeas = getFilteredIdeas();
 
   if (filteredIdeas.length === 0) {
-    randomResult.textContent = "目前沒有可以抽選的 Idea。";
+    randomResult.textContent =
+      "目前沒有可以抽選的 Idea。";
+
     randomResult.classList.remove("hidden");
     return;
   }
 
   const randomIndex =
-    Math.floor(Math.random() * filteredIdeas.length);
+    Math.floor(
+      Math.random() * filteredIdeas.length
+    );
 
   const idea = filteredIdeas[randomIndex];
 
@@ -167,6 +283,7 @@ filterButtons.forEach((button) => {
   });
 });
 
+searchInput.addEventListener("input", renderIdeas);
 favoriteOnly.addEventListener("change", renderIdeas);
 
 clearAllBtn.addEventListener("click", () => {
@@ -183,6 +300,8 @@ clearAllBtn.addEventListener("click", () => {
   }
 
   ideas = [];
+  editingIdeaId = null;
+
   saveIdeas();
 
   randomResult.classList.add("hidden");
