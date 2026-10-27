@@ -1,0 +1,47 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Idea Forge</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header>
+      <p class="eyebrow">IDEA FORGE</p>
+      <h1>把靈感留下來。</h1>
+      <p class="subtitle">Game、Design、Video、Business，想到什麼就先丟進來。</p>
+    </header>
+
+    <section class="composer">
+      <input id="ideaInput" type="text" placeholder="輸入一個新點子..." />
+
+      <select id="categoryInput">
+        <option value="Game">Game</option>
+        <option value="Design">Design</option>
+        <option value="Video">Video</option>
+        <option value="Business">Business</option>
+        <option value="Random">Random</option>
+      </select>
+
+      <button id="addBtn">新增 Idea</button>
+      <button id="randomBtn" class="secondary">隨機抽一個</button>
+    </section>
+
+    <section id="randomResult" class="random-result hidden"></section>
+
+    <section>
+      <div class="section-title">
+        <h2>Ideas</h2>
+        <span id="ideaCount">0</span>
+      </div>
+
+      <div id="ideaList" class="idea-grid"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
